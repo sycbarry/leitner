@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deck Editor</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="deck-title"></h1>
+        
+        <div id="card-list">
+            <!-- Cards will be rendered here by JavaScript -->
+        </div>
+
+        <div id="add-card-form">
+            <h2>Add New Card</h2>
+            <form id="new-card-form">
+                <textarea id="new-front" placeholder="Front of card" required></textarea>
+                <textarea id="new-back" placeholder="Back of card" required></textarea>
+                <button type="submit" class="btn-primary">Add Card</button>
+            </form>
+        </div>
+        
+        <button id="save-btn" class="btn-save">Save Changes</button>
+    </div>
+    
+    <script src="/app.js"></script>
+</body>
+</html> 

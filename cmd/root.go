@@ -33,6 +33,18 @@ Examples:
   # List all packages
   leitner list packages
 
+  # List all decks in a package
+  leitner list decks --package=<packagename>
+
+  # List all packages and decks in a tree
+  leitner list all
+
+  # Edit a deck in a package (opens web editor)
+  leitner edit deck --package=<packagename> --name=<deckname>
+
+  # Study a deck
+  leitner study deck --package=<packagename> --name=<deckname>
+
   # Delete a package
   leitner delete package --name=<packagename>
 
@@ -61,7 +73,13 @@ func init() {
 	NewCmd.AddCommand(NewDeckCmd)
 	rootCmd.AddCommand(ListCmd)
 	ListCmd.AddCommand(PackagesCmd)
+	ListCmd.AddCommand(ListDecksCmd)
+	ListCmd.AddCommand(ListAllCmd)
 	rootCmd.AddCommand(DeleteCmd)
 	DeleteCmd.AddCommand(DeletePackageCmd)
 	DeleteCmd.AddCommand(DeleteDeckCmd)
+	rootCmd.AddCommand(EditCmd)
+	EditCmd.AddCommand(EditDeckCmd)
+	rootCmd.AddCommand(StudyCmd)
+	StudyCmd.AddCommand(StudyDeckCmd)
 }
