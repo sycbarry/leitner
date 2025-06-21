@@ -14,11 +14,10 @@ var tagName string
 
 var TagCmd = &cobra.Command{
 	Use:   "tag",
-	Short: "Tag content from stdin",
-	Long: `Reads content from stdin and saves it to a file in a tagged directory.
+	Short: "Tag content from stdin or manage tags",
+	Long: `Tag content from stdin or manage tags with subcommands.
 	
-Example:
-  curl -s https://en.wikipedia.org/wiki/Deep_learning | ./leitner tag --name=cs`,
+When run without a subcommand, it reads from stdin.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		stat, _ := os.Stdin.Stat()
 		if (stat.Mode() & os.ModeCharDevice) != 0 {
@@ -53,4 +52,5 @@ Example:
 func init() {
 	TagCmd.Flags().StringVar(&tagName, "name", "", "Name of the tag")
 	TagCmd.MarkFlagRequired("name")
+	TagCmd.AddCommand(TagDeleteCmd)
 }

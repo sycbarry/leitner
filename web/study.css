@@ -17,7 +17,7 @@ body {
 
 .study-container {
     width: 90%;
-    max-width: 500px;
+    max-width: 700px;
     text-align: center;
 }
 
@@ -25,16 +25,20 @@ body {
     background: white;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    min-height: 300px;
-    min-width: 400px;
+    min-height: 400px;
+    min-width: 600px;
+    max-width: 700px;
+    max-height: 500px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 2rem;
-    padding: 2rem;
+    font-size: 1.5rem;
+    line-height: 1.6;
+    padding: 3rem;
     cursor: pointer;
     perspective: 1000px;
     margin-bottom: 2rem;
+    overflow: hidden;
 }
 
 .card-content {
@@ -56,6 +60,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 2rem;
+    box-sizing: border-box;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
 }
 
 .card-back {
@@ -110,12 +119,13 @@ body {
 
 .progress-bar-container {
     width: 20px;
-    height: 300px;
+    height: 400px;
     background-color: #e0e0e0;
     border-radius: 10px;
     overflow: hidden;
     display: flex;
     flex-direction: column-reverse; /* Fills from bottom to top */
+    margin-left: 10px;
 }
 
 .progress-bar-fill {

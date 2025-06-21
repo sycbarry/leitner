@@ -45,6 +45,18 @@ Examples:
   # Capture and tag content from stdin
   # curl -s https://example.com | leitner tag --name=<tagname>
 
+  # Delete a specific file from a tag
+  leitner tag delete --name=<tagname> --file=<filename>
+
+  # Configure an LLM provider
+  leitner config set
+
+  # View LLM provider configuration
+  leitner config list
+
+  # Generate a deck from a tag using an LLM
+  leitner generate deck --package=<pkg> --name=<deck> --from-tag=<tag> --cardcount=10
+
   # Edit a deck in a package (opens web editor)
   leitner edit deck --package=<packagename> --name=<deckname>
 
@@ -90,4 +102,6 @@ func init() {
 	rootCmd.AddCommand(StudyCmd)
 	StudyCmd.AddCommand(StudyDeckCmd)
 	rootCmd.AddCommand(TagCmd)
+	rootCmd.AddCommand(ConfigCmd)
+	rootCmd.AddCommand(GenerateCmd)
 }

@@ -110,14 +110,46 @@ This will open a web browser with a flashcard interface to begin your study sess
 
 ### `tag`
 
-Capture and tag content from the web or other command-line tools.
+Capture and tag content or manage tagged files.
 
-**Usage:**
+**Capture from stdin:**
 ```bash
 # Pipe the content of a webpage to a tag
 curl -s https://en.wikipedia.org/wiki/Spaced_repetition | ./leitner tag --name=learning
-
-# Pipe from a local file
-cat my_notes.txt | ./leitner tag --name=personal
 ```
 This saves the content into a timestamped file within `~/.leitner/__tags__/<tagname>/`.
+
+**Delete a tagged file:**
+```bash
+./leitner tag delete --name=<tagname> --file=<filename>
+```
+
+---
+
+### `config`
+
+Manage LLM provider configuration.
+
+**Set or update your provider:**
+```bash
+./leitner config set
+```
+This will launch an interactive prompt to guide you through selecting a provider and entering an API key.
+
+**View your current configuration:**
+```bash
+./leitner config list
+```
+This displays the currently configured provider and a masked version of the API key.
+
+---
+
+### `generate`
+
+Generate a new deck of flashcards from your tagged content using a configured LLM.
+
+**Usage:**
+```bash
+./leitner generate deck --package=<packagename> --name=<deckname> --from-tag=<tagname> --cardcount=15
+```
+This command reads all the content in the specified tag, sends it to your LLM, and creates a new deck with the generated flashcards.
