@@ -28,12 +28,12 @@ var EditDeckCmd = &cobra.Command{
 		go web.StartDeckEditorServer(editDeckPackageName, editDeckName)
 		time.Sleep(500 * time.Millisecond) // Give server a moment to start
 		if runtime.GOOS == "darwin" {
-			err := exec.Command("open", "-a", "Google Chrome", "http://localhost:8080/").Start()
+			err := exec.Command("open", "-a", "Google Chrome", "http://localhost:8080/edit").Start()
 			if err != nil {
-				fmt.Println("Could not open Chrome automatically. Please open http://localhost:8080/ manually.")
+				fmt.Println("Could not open Chrome automatically. Please open http://localhost:8080/edit manually.")
 			}
 		} else {
-			fmt.Println("Please open http://localhost:8080/ in your browser.")
+			fmt.Println("Please open http://localhost:8080/edit in your browser.")
 		}
 		select {} // Keep process alive
 	},

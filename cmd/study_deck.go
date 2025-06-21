@@ -22,7 +22,7 @@ var StudyDeckCmd = &cobra.Command{
 		go web.StartStudyServer(studyDeckPackageName, studyDeckName)
 		time.Sleep(500 * time.Millisecond) // Give server a moment to start
 		if runtime.GOOS == "darwin" {
-			exec.Command("open", "-a", "Google Chrome", "http://localhost:8080/").Start()
+			exec.Command("open", "-a", "Google Chrome", "http://localhost:8080/study").Start()
 		}
 		select {} // Keep process alive
 	},

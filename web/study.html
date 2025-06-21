@@ -7,18 +7,37 @@
     <link rel="stylesheet" href="/study.css">
 </head>
 <body>
-    <div class="study-container">
-        <div class="flashcard">
-            <div class="card-content">
-                <div class="card-face card-front"></div>
-                <div class="card-face card-back"></div>
+    <button id="view-all-btn" class="view-all-btn">☰</button>
+    <div class="main-content-wrapper">
+        <div class="study-container">
+            <div class="flashcard">
+                <div class="card-content">
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back"></div>
+                </div>
+            </div>
+            <div class="controls" id="answer-controls" style="display: none;">
+                <h4>How well did you know it?</h4>
+                <div class="button-row">
+                    <button class="btn-rating btn-rating-1" data-rating="1">Blackout</button>
+                    <button class="btn-rating btn-rating-2" data-rating="2">Incorrect</button>
+                    <button class="btn-rating btn-rating-3" data-rating="3">Hard</button>
+                    <button class="btn-rating btn-rating-4" data-rating="4">Good</button>
+                    <button class="btn-rating btn-rating-5" data-rating="5">Easy</button>
+                </div>
             </div>
         </div>
-        <div class="controls">
-            <button class="btn-incorrect" id="incorrect-btn">Incorrect</button>
-            <button class="btn-correct" id="correct-btn">Correct</button>
+        <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progress-bar"></div>
         </div>
-        <div class="progress" id="progress-indicator"></div>
+    </div>
+
+    <div id="questions-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>All Questions</h2>
+            <ul id="all-questions-list"></ul>
+        </div>
     </div>
     
     <script src="/study.js"></script>

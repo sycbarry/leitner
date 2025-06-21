@@ -22,19 +22,20 @@ type Deck struct {
 func StartDeckEditorServer(packageName, deckName string) {
 	homeDir, _ := os.UserHomeDir()
 	deckPath := filepath.Join(homeDir, ".leitner", packageName, deckName, "deck.json")
-	webDir := "web" // Assuming web files are in a 'web' directory
+	webDir := "web"
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/edit", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "index.html"))
 	})
-	http.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "style.css"))
 	})
-	http.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "app.js"))
 	})
 
-	http.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
 			data, err := ioutil.ReadFile(deckPath)
 			if err != nil {
@@ -59,8 +60,8 @@ func StartDeckEditorServer(packageName, deckName string) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
-	fmt.Println("Deck editor running at http://localhost:8080/")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Deck editor running at http://localhost:8080/edit")
+	http.ListenAndServe(":8080", mux)
 }
 
 func StartStudyServer(packageName, deckName string) {
@@ -68,17 +69,18 @@ func StartStudyServer(packageName, deckName string) {
 	deckPath := filepath.Join(homeDir, ".leitner", packageName, deckName, "deck.json")
 	webDir := "web"
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/study", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "study.html"))
 	})
-	http.HandleFunc("/study.css", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/study.css", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "study.css"))
 	})
-	http.HandleFunc("/study.js", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/study.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, filepath.Join(webDir, "study.js"))
 	})
 
-	http.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
 		data, err := ioutil.ReadFile(deckPath)
 		if err != nil {
 			http.Error(w, "Deck not found", http.StatusNotFound)
@@ -88,6 +90,6 @@ func StartStudyServer(packageName, deckName string) {
 		w.Write(data)
 	})
 
-	fmt.Println("Study session running at http://localhost:8080/")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println("Study session running at http://localhost:8080/study")
+	http.ListenAndServe(":8080", mux)
 }
