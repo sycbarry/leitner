@@ -61,6 +61,11 @@ List packages or decks.
 ./leitner list all
 ```
 
+**List all tags and their captured content:**
+```bash
+./leitner list tags
+```
+
 ---
 
 ### `edit`
@@ -100,3 +105,19 @@ Start a study session for a deck.
 ./leitner study deck --package=<packagename> --name=<deckname>
 ```
 This will open a web browser with a flashcard interface to begin your study session.
+
+---
+
+### `tag`
+
+Capture and tag content from the web or other command-line tools.
+
+**Usage:**
+```bash
+# Pipe the content of a webpage to a tag
+curl -s https://en.wikipedia.org/wiki/Spaced_repetition | ./leitner tag --name=learning
+
+# Pipe from a local file
+cat my_notes.txt | ./leitner tag --name=personal
+```
+This saves the content into a timestamped file within `~/.leitner/__tags__/<tagname>/`.

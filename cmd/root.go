@@ -39,6 +39,12 @@ Examples:
   # List all packages and decks in a tree
   leitner list all
 
+  # List all tags and their content
+  leitner list tags
+
+  # Capture and tag content from stdin
+  # curl -s https://example.com | leitner tag --name=<tagname>
+
   # Edit a deck in a package (opens web editor)
   leitner edit deck --package=<packagename> --name=<deckname>
 
@@ -75,6 +81,7 @@ func init() {
 	ListCmd.AddCommand(PackagesCmd)
 	ListCmd.AddCommand(ListDecksCmd)
 	ListCmd.AddCommand(ListAllCmd)
+	ListCmd.AddCommand(ListTagsCmd)
 	rootCmd.AddCommand(DeleteCmd)
 	DeleteCmd.AddCommand(DeletePackageCmd)
 	DeleteCmd.AddCommand(DeleteDeckCmd)
@@ -82,4 +89,5 @@ func init() {
 	EditCmd.AddCommand(EditDeckCmd)
 	rootCmd.AddCommand(StudyCmd)
 	StudyCmd.AddCommand(StudyDeckCmd)
+	rootCmd.AddCommand(TagCmd)
 }
