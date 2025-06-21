@@ -8,6 +8,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const questionsModal = document.getElementById('questions-modal');
     const closeModalBtn = document.querySelector('.close-btn');
     const allQuestionsList = document.getElementById('all-questions-list');
+    
+    // New elements for edit/remove functionality
+    const editRemoveBtn = document.getElementById('edit-remove-btn');
+    const editRemoveModal = document.getElementById('edit-remove-modal');
+    const removeCardBtn = document.getElementById('remove-card-btn');
+    const cancelRemoveBtn = document.getElementById('cancel-remove-btn');
 
     let deck = {};
     let boxes = [[], [], [], [], []];
@@ -135,6 +141,82 @@ document.addEventListener('DOMContentLoaded', () => {
             questionsModal.style.display = 'none';
         }
     });
+
+    // Edit/Remove button functionality
+    editRemoveBtn.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent card flip
+        editRemoveModal.style.display = 'block';
+    });
+
+    removeCardBtn.addEventListener('click', () => {
+        if (currentCardIndex !== -1) {
+            // Remove card from all boxes and graduated cards
+            boxes.forEach(box => {
+                const index = box.indexOf(currentCardIndex);
+                if (index > -1) {
+                    box.splice(index, 1);
+                }
+            });
+            
+            const graduatedIndex = graduatedCards.indexOf(currentCardIndex);
+            if (graduatedIndex > -1) {
+                graduatedCards.splice(graduatedIndex, 1);
+            }
+
+            // Remove from deck
+            deck.cards.splice(currentCardIndex, 1);
+
+            // Update indices for remaining cards
+            boxes.forEach(box => {
+                for (let i = 0; i < box.length; i++) {
+                    if (box[i] > currentCardIndex) {
+                        box[i]--;
+                    }
+                }
+            });
+
+            graduatedCards.forEach((cardIndex, i) => {
+                if (cardIndex > currentCardIndex) {
+                    graduatedCards[i]--;
+                }
+            });
+
+            // Save updated deck
+            saveDeck();
+
+            // Close modal and move to next card
+            editRemoveModal.style.display = 'none';
+            nextCard();
+        }
+    });
+
+    cancelRemoveBtn.addEventListener('click', () => {
+        editRemoveModal.style.display = 'none';
+    });
+
+    // Close modals when clicking outside or on close button
+    window.addEventListener('click', (e) => {
+        if (e.target === questionsModal) {
+            questionsModal.style.display = 'none';
+        }
+        if (e.target === editRemoveModal) {
+            editRemoveModal.style.display = 'none';
+        }
+    });
+
+    const saveDeck = async () => {
+        try {
+            await fetch('/deck', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(deck)
+            });
+        } catch (error) {
+            console.error("Failed to save deck:", error);
+        }
+    };
 
     fetchDeck();
 }); 

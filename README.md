@@ -28,7 +28,7 @@ Initializes the Leitner system by creating the necessary directories in your hom
 
 ### `new`
 
-Create new packages or decks.
+Create new packages, decks, or tags.
 
 **Create a package:**
 ```bash
@@ -39,6 +39,12 @@ Create new packages or decks.
 ```bash
 ./leitner new deck --package=<packagename> --name=<deckname>
 ```
+
+**Create a new tag:**
+```bash
+./leitner new tag --name=<tagname>
+```
+This creates an empty tag directory that you can later populate with content.
 
 ---
 
@@ -118,6 +124,12 @@ Capture and tag content or manage tagged files.
 curl -s https://en.wikipedia.org/wiki/Spaced_repetition | ./leitner tag --name=learning
 ```
 This saves the content into a timestamped file within `~/.leitner/__tags__/<tagname>/`.
+
+**Tag a file directly:**
+```bash
+./leitner tag --name=<tagname> --from-file=<filename>
+```
+This copies the specified file to the tag directory. If the tag doesn't exist, it will be created automatically.
 
 **Delete a tagged file:**
 ```bash

@@ -30,6 +30,9 @@ Examples:
   # Create a new deck inside a package
   leitner new deck --package=<packagename> --name=<deckname>
 
+  # Create a new tag
+  leitner new tag --name=<tagname>
+
   # List all packages
   leitner list packages
 
@@ -44,6 +47,9 @@ Examples:
 
   # Capture and tag content from stdin
   # curl -s https://example.com | leitner tag --name=<tagname>
+
+  # Tag a file directly
+  leitner tag --name=<tagname> --from-file=<filename>
 
   # Delete a specific file from a tag
   leitner tag delete --name=<tagname> --file=<filename>
@@ -89,6 +95,7 @@ func init() {
 	rootCmd.AddCommand(NewCmd)
 	NewCmd.AddCommand(PackageCmd)
 	NewCmd.AddCommand(NewDeckCmd)
+	NewCmd.AddCommand(NewTagCmd)
 	rootCmd.AddCommand(ListCmd)
 	ListCmd.AddCommand(PackagesCmd)
 	ListCmd.AddCommand(ListDecksCmd)

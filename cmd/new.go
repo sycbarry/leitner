@@ -9,3 +9,9 @@ var NewCmd = &cobra.Command{
 	Short: "Create new resources",
 	Long:  `Create new resources managed by leitner`,
 }
+
+func init() {
+	NewCmd.AddCommand(PackageCmd)
+	NewCmd.AddCommand(NewDeckCmd)
+	NewCmd.AddCommand(NewTagCmd)
+}
