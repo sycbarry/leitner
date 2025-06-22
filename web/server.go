@@ -1,6 +1,7 @@
 package web
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -8,6 +9,9 @@ import (
 	"os"
 	"path/filepath"
 )
+
+//go:embed *.html *.css *.js
+var webFiles embed.FS
 
 type Card struct {
 	Front string `json:"front"`
@@ -22,17 +26,44 @@ type Deck struct {
 func StartDeckEditorServer(packageName, deckName string) {
 	homeDir, _ := os.UserHomeDir()
 	deckPath := filepath.Join(homeDir, ".leitner", packageName, deckName, "deck.json")
-	webDir := "web"
 
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "/edit", http.StatusFound)
+	})
+
 	mux.HandleFunc("/edit", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "index.html"))
+		// Serve index.html for the edit endpoint
+		data, err := webFiles.ReadFile("index.html")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write(data)
 	})
 	mux.HandleFunc("/style.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "style.css"))
+		data, err := webFiles.ReadFile("style.css")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/css")
+		w.Write(data)
 	})
 	mux.HandleFunc("/app.js", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "app.js"))
+		data, err := webFiles.ReadFile("app.js")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Write(data)
 	})
 
 	mux.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
@@ -67,17 +98,44 @@ func StartDeckEditorServer(packageName, deckName string) {
 func StartStudyServer(packageName, deckName string) {
 	homeDir, _ := os.UserHomeDir()
 	deckPath := filepath.Join(homeDir, ".leitner", packageName, deckName, "deck.json")
-	webDir := "web"
 
 	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			http.NotFound(w, r)
+			return
+		}
+		http.Redirect(w, r, "/study", http.StatusFound)
+	})
+
 	mux.HandleFunc("/study", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "study.html"))
+		// Serve study.html for the study endpoint
+		data, err := webFiles.ReadFile("study.html")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/html")
+		w.Write(data)
 	})
 	mux.HandleFunc("/study.css", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "study.css"))
+		data, err := webFiles.ReadFile("study.css")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "text/css")
+		w.Write(data)
 	})
 	mux.HandleFunc("/study.js", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, filepath.Join(webDir, "study.js"))
+		data, err := webFiles.ReadFile("study.js")
+		if err != nil {
+			http.Error(w, "File not found", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/javascript")
+		w.Write(data)
 	})
 
 	mux.HandleFunc("/deck", func(w http.ResponseWriter, r *http.Request) {
