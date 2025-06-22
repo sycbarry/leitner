@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"leitner/web"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"time"
 
@@ -19,7 +22,20 @@ var StudyDeckCmd = &cobra.Command{
 	Short: "Study a deck using the web UI",
 	Long:  `Spin up a webserver to study a deck's flashcards in a browser.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		go web.StartStudyServer(studyDeckPackageName, studyDeckName)
+		// Generate session ID
+		timestamp := time.Now().Unix()
+		sessionID := fmt.Sprintf("%d-%s-%s", timestamp, studyDeckPackageName, studyDeckName)
+
+		// Create session file path
+		homeDir, _ := os.UserHomeDir()
+		sessionsDir := filepath.Join(homeDir, ".leitner", "__sessions__")
+		os.MkdirAll(sessionsDir, 0755)
+		sessionFile := filepath.Join(sessionsDir, sessionID+".json")
+		// Create empty session file (or touch it)
+		os.WriteFile(sessionFile, []byte("{}"), 0644)
+
+		// Pass sessionID to the web server
+		go web.StartStudyServerWithSession(studyDeckPackageName, studyDeckName, sessionID)
 		time.Sleep(500 * time.Millisecond) // Give server a moment to start
 		if runtime.GOOS == "darwin" {
 			exec.Command("open", "-a", "Google Chrome", "http://localhost:8080/study").Start()

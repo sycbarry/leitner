@@ -26,24 +26,80 @@ document.addEventListener('DOMContentLoaded', () => {
     let cardsStudiedInFocus = 0; // Track how many cards studied in current focus set
     let lastResurfaceTime = 0; // Track when we last resurfaced a well-performed card
 
-    const fetchDeck = async () => {
+    // --- SESSION STATE MANAGEMENT ---
+    function getSessionIdFromCookie() {
+        const match = document.cookie.match(/(?:^|; )leitner_session_id=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    async function loadSessionState() {
         try {
-            const response = await fetch('/deck');
-            deck = await response.json();
-            boxes[0] = deck.cards.map((_, index) => index);
-            
-            // Initialize confidence levels for new cards
-            deck.cards.forEach((_, index) => {
-                if (!cardConfidence.hasOwnProperty(index)) {
-                    cardConfidence[index] = 0; // 0 means no rating yet
-                }
-            });
-            
-            initializeFocusSet();
-            nextCard();
-        } catch (error) {
-            console.error("Failed to load deck:", error);
+            const response = await fetch('/api/session/load');
+            if (!response.ok) throw new Error('No session state');
+            const state = await response.json();
+            if (state && state.deck) {
+                deck = state.deck;
+                boxes = state.boxes || [[], [], [], [], []];
+                graduatedCards = state.graduatedCards || [];
+                cardConfidence = state.cardConfidence || {};
+                focusCards = state.focusCards || [];
+                focusCardIndex = state.focusCardIndex || 0;
+                cardsStudiedInFocus = state.cardsStudiedInFocus || 0;
+                lastResurfaceTime = state.lastResurfaceTime || 0;
+                return true;
+            }
+        } catch (e) {
+            // No session state or error
         }
+        return false;
+    }
+
+    async function saveSessionState() {
+        const state = {
+            deck,
+            boxes,
+            graduatedCards,
+            cardConfidence,
+            focusCards,
+            focusCardIndex,
+            cardsStudiedInFocus,
+            lastResurfaceTime
+        };
+        try {
+            await fetch('/api/session/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(state)
+            });
+        } catch (e) {
+            // Ignore save errors for now
+        }
+    }
+
+    const fetchDeck = async () => {
+        // Try to load session state first
+        const sessionRestored = await loadSessionState();
+        if (!sessionRestored) {
+            try {
+                const response = await fetch('/deck');
+                deck = await response.json();
+                boxes[0] = deck.cards.map((_, index) => index);
+                
+                // Initialize confidence levels for new cards
+                deck.cards.forEach((_, index) => {
+                    if (!cardConfidence.hasOwnProperty(index)) {
+                        cardConfidence[index] = 0; // 0 means no rating yet
+                    }
+                });
+                
+                initializeFocusSet();
+                nextCard();
+            } catch (error) {
+                console.error("Failed to load deck:", error);
+            }
+        }
+        initializeFocusSet();
+        nextCard();
     };
 
     const initializeFocusSet = () => {
@@ -253,6 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         
         nextCard();
+        saveSessionState(); // Save after moving card
     };
 
     const populateQuestionsList = () => {
@@ -338,6 +395,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Save updated deck
             saveDeck();
+            saveSessionState(); // Save after removing card
 
             // Close modal and move to next card
             editRemoveModal.style.display = 'none';

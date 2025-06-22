@@ -74,12 +74,25 @@ Examples:
 
   # Delete a deck from a package
   leitner delete deck --package=<packagename> --name=<deckname>
+
+  # List all study sessions
+  leitner session list
+
+  # Resume the latest or a specific study session
+  leitner session resume
+  leitner session resume --id=<session-file-name-without-.json>
 `
 
 var rootCmd = &cobra.Command{
 	Use:   "leitner",
 	Short: "testing.",
 	Long:  `testing this.`,
+}
+
+var SessionCmd = &cobra.Command{
+	Use:   "session",
+	Short: "Manage study sessions",
+	Long:  `Manage and resume study sessions.`,
 }
 
 func Execute() {
@@ -111,4 +124,7 @@ func init() {
 	rootCmd.AddCommand(TagCmd)
 	rootCmd.AddCommand(ConfigCmd)
 	rootCmd.AddCommand(GenerateCmd)
+	rootCmd.AddCommand(SessionCmd)
+	SessionCmd.AddCommand(SessionResumeCmd)
+	SessionCmd.AddCommand(SessionListCmd)
 }

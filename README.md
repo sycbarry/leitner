@@ -118,6 +118,30 @@ This will open a web browser with a flashcard interface to begin your study sess
 
 ---
 
+### `session`
+
+Manage and resume study sessions.
+
+**List all sessions:**
+```bash
+./leitner session list
+```
+Lists all saved study sessions, ordered by most recent, showing the date, package, and deck.
+
+**Resume a session:**
+```bash
+./leitner session resume
+```
+Interactively select a session to resume (arrow keys, enter to select). Defaults to the latest session if you just press enter.
+
+**Resume a session by ID:**
+```bash
+./leitner session resume --id=<session-file-name-without-.json>
+```
+Resumes the session with the specified file name (as shown in `session list`).
+
+---
+
 ### `tag`
 
 Capture and tag content or manage tagged files.
