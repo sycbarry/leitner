@@ -19,6 +19,7 @@ body {
     width: 90%;
     max-width: 700px;
     text-align: center;
+    position: relative;
 }
 
 .flashcard {
@@ -73,13 +74,19 @@ body {
 }
 
 .controls {
-    margin-top: 1.5rem;
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
     opacity: 0;
     transition: opacity 0.5s ease;
+    pointer-events: none;
 }
 
 .flashcard.is-flipped + .controls {
     opacity: 1;
+    pointer-events: auto;
 }
 
 .controls h4 {
@@ -266,4 +273,24 @@ body {
     background-color: #95a5a6;
     color: white;
     box-shadow: 0 4px 12px rgba(149, 165, 166, 0.3);
-} 
+}
+
+.confidence-indicator {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #e0e0e0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+.confidence-indicator.confidence-1 { background-color: #e74c3c; }
+.confidence-indicator.confidence-2 { background-color: #f39c12; }
+.confidence-indicator.confidence-3 { background-color: #3498db; }
+.confidence-indicator.confidence-4 { background-color: #27ae60; }
+.confidence-indicator.confidence-5 { background-color: #8e44ad; } 

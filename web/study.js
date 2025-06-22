@@ -20,12 +20,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let graduatedCards = [];
     let currentCardIndex = -1;
     let currentBox = 0;
+    let cardConfidence = {}; // Track confidence level for each card
 
     const fetchDeck = async () => {
         try {
             const response = await fetch('/deck');
             deck = await response.json();
             boxes[0] = deck.cards.map((_, index) => index);
+            
+            // Initialize confidence levels for new cards
+            deck.cards.forEach((_, index) => {
+                if (!cardConfidence.hasOwnProperty(index)) {
+                    cardConfidence[index] = 0; // 0 means no rating yet
+                }
+            });
+            
             nextCard();
         } catch (error) {
             console.error("Failed to load deck:", error);
@@ -36,19 +45,39 @@ document.addEventListener('DOMContentLoaded', () => {
         flashcard.classList.remove('is-flipped');
         answerControls.style.display = 'none';
 
-        for (let i = 0; i < boxes.length; i++) {
-            if (boxes[i].length > 0) {
-                currentBox = i;
-                currentCardIndex = boxes[i][0];
-                updateCardView();
-                return;
+        const nonEmptyBoxes = boxes
+            .map((box, index) => ({ box, index }))
+            .filter(item => item.box.length > 0);
+
+        if (nonEmptyBoxes.length === 0) {
+            if (graduatedCards.length === deck.cards.length) {
+                cardFront.textContent = "You've completed the deck!";
+                cardBack.textContent = "Congratulations!";
+            } else {
+                cardFront.textContent = "No cards available in boxes.";
+                cardBack.textContent = "Check graduated cards or adjust logic.";
             }
+            answerControls.style.display = 'none';
+            updateProgressBar();
+            return;
         }
 
-        cardFront.textContent = "You've completed the deck!";
-        cardBack.textContent = "Congratulations!";
-        answerControls.style.display = 'none';
-        updateProgressBar(); // Final update to 100%
+        const weightedBoxSelection = [];
+        nonEmptyBoxes.forEach(({ index }) => {
+            const weight = (boxes.length - index) * (boxes.length - index);
+            for (let i = 0; i < weight; i++) {
+                weightedBoxSelection.push(index);
+            }
+        });
+
+        const randomWeightedIndex = Math.floor(Math.random() * weightedBoxSelection.length);
+        currentBox = weightedBoxSelection[randomWeightedIndex];
+
+        const cardPool = boxes[currentBox];
+        const randomIndexInBox = Math.floor(Math.random() * cardPool.length);
+        currentCardIndex = cardPool[randomIndexInBox];
+
+        updateCardView();
     };
 
     const updateCardView = () => {
@@ -56,6 +85,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = deck.cards[currentCardIndex];
         cardFront.textContent = card.front;
         cardBack.textContent = card.back;
+        
+        // Update confidence indicator
+        const confidenceIndicator = document.getElementById('confidence-indicator');
+        confidenceIndicator.className = 'confidence-indicator';
+        if (cardConfidence[currentCardIndex] > 0) {
+            confidenceIndicator.classList.add(`confidence-${cardConfidence[currentCardIndex]}`);
+        }
+        
         updateProgressBar();
     };
 
@@ -91,7 +128,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     const moveCard = (rating) => {
-        const cardToMove = boxes[currentBox].shift();
+        const cardIndexInBox = boxes[currentBox].indexOf(currentCardIndex);
+        if (cardIndexInBox === -1) {
+            console.error("Card to move not found in the current box.");
+            nextCard();
+            return;
+        }
+        
+        // Store the confidence level for this card
+        cardConfidence[currentCardIndex] = rating;
+        
+        const [cardToMove] = boxes[currentBox].splice(cardIndexInBox, 1);
 
         if (currentBox === boxes.length - 1 && rating >= 4) {
             graduatedCards.push(cardToMove);
@@ -163,6 +210,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 graduatedCards.splice(graduatedIndex, 1);
             }
 
+            // Remove confidence data for this card
+            delete cardConfidence[currentCardIndex];
+
             // Remove from deck
             deck.cards.splice(currentCardIndex, 1);
 
@@ -180,6 +230,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     graduatedCards[i]--;
                 }
             });
+
+            // Update confidence indices for remaining cards
+            const newCardConfidence = {};
+            Object.keys(cardConfidence).forEach(key => {
+                const oldIndex = parseInt(key);
+                if (oldIndex < currentCardIndex) {
+                    newCardConfidence[oldIndex] = cardConfidence[oldIndex];
+                } else if (oldIndex > currentCardIndex) {
+                    newCardConfidence[oldIndex - 1] = cardConfidence[oldIndex];
+                }
+            });
+            cardConfidence = newCardConfidence;
 
             // Save updated deck
             saveDeck();
