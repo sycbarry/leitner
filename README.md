@@ -2,7 +2,7 @@
 
 A simple, command-line based Leitner system for spaced repetition learning.
 
-<img src="leitner.png" alt="Leitner logo" width="120"/>
+<img src="leitner.png" alt="Leitner logo" width="300"/>
 
 A video walkthrough is available here: [Watch the video](https://sebbarry-personal.nyc3.digitaloceanspaces.com/videos/leitner-1.mp4)
 
