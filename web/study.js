@@ -21,6 +21,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentCardIndex = -1;
     let currentBox = 0;
     let cardConfidence = {}; // Track confidence level for each card
+    let focusCards = []; // Current 5-card focus set
+    let focusCardIndex = 0; // Current position within focus set
+    let cardsStudiedInFocus = 0; // Track how many cards studied in current focus set
+    let lastResurfaceTime = 0; // Track when we last resurfaced a well-performed card
 
     const fetchDeck = async () => {
         try {
@@ -35,49 +39,127 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
+            initializeFocusSet();
             nextCard();
         } catch (error) {
             console.error("Failed to load deck:", error);
         }
     };
 
+    const initializeFocusSet = () => {
+        // Get all available cards (not graduated)
+        const availableCards = [];
+        boxes.forEach((box, boxIndex) => {
+            box.forEach(cardIndex => {
+                availableCards.push({ cardIndex, boxIndex });
+            });
+        });
+
+        if (availableCards.length === 0) {
+            focusCards = [];
+            return;
+        }
+
+        // Prioritize lower boxes (harder cards) for focus set
+        availableCards.sort((a, b) => {
+            // First prioritize by box (lower = harder)
+            if (a.boxIndex !== b.boxIndex) {
+                return a.boxIndex - b.boxIndex;
+            }
+            // Then by confidence (lower = needs more work)
+            const confidenceA = cardConfidence[a.cardIndex] || 0;
+            const confidenceB = cardConfidence[b.cardIndex] || 0;
+            return confidenceA - confidenceB;
+        });
+
+        // Take up to 5 cards for focus set
+        focusCards = availableCards.slice(0, 5).map(item => item.cardIndex);
+        focusCardIndex = 0;
+        cardsStudiedInFocus = 0;
+    };
+
+    const shouldResurfaceWellPerformedCard = () => {
+        // Resurface a well-performed card every 3-5 cards studied
+        const resurfaceInterval = Math.random() < 0.3 ? 3 : 5;
+        return cardsStudiedInFocus >= resurfaceInterval;
+    };
+
+    const getWellPerformedCard = () => {
+        // Find cards with confidence 4 or 5 that are not in current focus set
+        const wellPerformedCards = [];
+        boxes.forEach((box, boxIndex) => {
+            box.forEach(cardIndex => {
+                const confidence = cardConfidence[cardIndex] || 0;
+                if (confidence >= 4 && !focusCards.includes(cardIndex)) {
+                    wellPerformedCards.push(cardIndex);
+                }
+            });
+        });
+
+        // Also include graduated cards as well-performed
+        graduatedCards.forEach(cardIndex => {
+            if (!focusCards.includes(cardIndex)) {
+                wellPerformedCards.push(cardIndex);
+            }
+        });
+
+        if (wellPerformedCards.length === 0) {
+            return null;
+        }
+
+        // Return a random well-performed card
+        return wellPerformedCards[Math.floor(Math.random() * wellPerformedCards.length)];
+    };
+
     const nextCard = () => {
         flashcard.classList.remove('is-flipped');
         answerControls.style.display = 'none';
 
-        const nonEmptyBoxes = boxes
-            .map((box, index) => ({ box, index }))
-            .filter(item => item.box.length > 0);
-
-        if (nonEmptyBoxes.length === 0) {
-            if (graduatedCards.length === deck.cards.length) {
-                cardFront.textContent = "You've completed the deck!";
-                cardBack.textContent = "Congratulations!";
-            } else {
-                cardFront.textContent = "No cards available in boxes.";
-                cardBack.textContent = "Check graduated cards or adjust logic.";
+        // Check if we should resurface a well-performed card
+        if (shouldResurfaceWellPerformedCard()) {
+            const resurfaceCard = getWellPerformedCard();
+            if (resurfaceCard !== null) {
+                currentCardIndex = resurfaceCard;
+                currentBox = getCardBox(resurfaceCard);
+                cardsStudiedInFocus = 0; // Reset counter
+                updateCardView();
+                return;
             }
-            answerControls.style.display = 'none';
-            updateProgressBar();
-            return;
         }
 
-        const weightedBoxSelection = [];
-        nonEmptyBoxes.forEach(({ index }) => {
-            const weight = (boxes.length - index) * (boxes.length - index);
-            for (let i = 0; i < weight; i++) {
-                weightedBoxSelection.push(index);
+        // Check if we need to refresh the focus set
+        if (focusCards.length === 0 || focusCardIndex >= focusCards.length) {
+            initializeFocusSet();
+            if (focusCards.length === 0) {
+                // No more cards to study
+                if (graduatedCards.length === deck.cards.length) {
+                    cardFront.textContent = "You've completed the deck!";
+                    cardBack.textContent = "Congratulations!";
+                } else {
+                    cardFront.textContent = "No cards available in boxes.";
+                    cardBack.textContent = "Check graduated cards or adjust logic.";
+                }
+                answerControls.style.display = 'none';
+                updateProgressBar();
+                return;
             }
-        });
+        }
 
-        const randomWeightedIndex = Math.floor(Math.random() * weightedBoxSelection.length);
-        currentBox = weightedBoxSelection[randomWeightedIndex];
-
-        const cardPool = boxes[currentBox];
-        const randomIndexInBox = Math.floor(Math.random() * cardPool.length);
-        currentCardIndex = cardPool[randomIndexInBox];
-
+        // Get next card from focus set
+        currentCardIndex = focusCards[focusCardIndex];
+        currentBox = getCardBox(currentCardIndex);
+        focusCardIndex++;
+        cardsStudiedInFocus++;
         updateCardView();
+    };
+
+    const getCardBox = (cardIndex) => {
+        for (let i = 0; i < boxes.length; i++) {
+            if (boxes[i].includes(cardIndex)) {
+                return i;
+            }
+        }
+        return -1; // Card not found in any box
     };
 
     const updateCardView = () => {
@@ -142,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentBox === boxes.length - 1 && rating >= 4) {
             graduatedCards.push(cardToMove);
+            // Refresh focus set since we graduated a card
+            initializeFocusSet();
             nextCard();
             return;
         }
@@ -162,6 +246,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         boxes[newBox].push(cardToMove);
+        
+        // If the card moved significantly (up or down), refresh focus set
+        if (Math.abs(newBox - currentBox) >= 2) {
+            initializeFocusSet();
+        }
+        
         nextCard();
     };
 
@@ -242,6 +332,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             cardConfidence = newCardConfidence;
+
+            // Refresh focus set since we removed a card
+            initializeFocusSet();
 
             // Save updated deck
             saveDeck();
