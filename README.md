@@ -146,12 +146,27 @@ Resumes the session with the specified file name (as shown in `session list`).
 
 Capture and tag content or manage tagged files.
 
-**Capture from stdin:**
-```bash
-# Pipe the content of a webpage to a tag
-curl -s https://en.wikipedia.org/wiki/Spaced_repetition | ./leitner tag --name=learning
-```
-This saves the content into a timestamped file within `~/.leitner/__tags__/<tagname>/`.
+**Capture and tag plaintext from a webpage:**
+To save only the readable text (not the raw HTML) from a webpage, you can use a tool to convert HTML to plaintext before tagging. Here are some examples:
+
+- Using `lynx`:
+  ```bash
+  curl -s https://en.wikipedia.org/wiki/Spaced_repetition | lynx -stdin -dump | ./leitner tag --name=learning
+  ```
+- Using `w3m`:
+  ```bash
+  curl -s https://en.wikipedia.org/wiki/Spaced_repetition | w3m -dump -T text/html | ./leitner tag --name=learning
+  ```
+- Using `html2text`:
+  ```bash
+  curl -s https://en.wikipedia.org/wiki/Spaced_repetition | html2text | ./leitner tag --name=learning
+  ```
+- Using `pandoc`:
+  ```bash
+  curl -s https://en.wikipedia.org/wiki/Spaced_repetition | pandoc -f html -t plain | ./leitner tag --name=learning
+  ```
+
+This will save only the readable text from the webpage into your tag, making it easier to review and generate flashcards from clean content.
 
 **Tag a file directly:**
 ```bash
